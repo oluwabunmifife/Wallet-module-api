@@ -31,5 +31,25 @@ class TopUpWallet:
             raise HTTPException(status_code=404, detail="Wallet not found")
         topup =  crud.create_transaction(db=db, transaction=transaction)
         update = crud.update_wallet_info(db=db, info_update=transaction)
-        system = crud.update_system_wallet(db=db)
-        return topup, update
+        # system = crud.update_system_wallet(db=db)
+        # return {
+        #     "TopUp": topup,
+        #     "Update": update,
+        #     "System": system
+        # }
+
+
+        if (transaction.transType == "Debit") or (transaction.transType == "debit"):
+            system = crud.update_system_wallet(db=db)
+            return {
+                "TopUp": topup,
+                "Update": update,
+                "System": system
+            }
+        else:
+            return {
+                "Update": update
+            }
+        
+
+# ADD A COLUMN THAT TELLS IF A TRANSACTION WAS SUCCESSFUL OR NOT AS PER INSUFFICIENT FUNDS

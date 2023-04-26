@@ -45,6 +45,7 @@ def create_transaction(db: Session, transaction: module.TransactionCreateandUpda
         #UPDATING SYSTEM WALLET
         sysBalanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == "System").first().balance
         sysBalanceAfter = sysBalanceBefore + transaction.amount
+
         #SYSTEM TRANSACTION UPDATE
         sys_transaction = database.SystemTransactions(amount=transaction.amount, narration=transaction.narration, transType="Credit", purpose=transaction.purpose, balanceBefore=sysBalanceBefore, balanceAfter=sysBalanceAfter)
 
@@ -54,19 +55,29 @@ def create_transaction(db: Session, transaction: module.TransactionCreateandUpda
         db_transaction = database.Transactions(amount=transaction.amount, 
                                            narration=transaction.narration, userID=transaction.userID, 
                                            transType=transaction.transType, purpose=transaction.purpose, balanceBefore=balanceBefore, balanceAfter=balanceAfter)
+        db.add_all([db_transaction, sys_transaction])
+        db.commit()
+        db.refresh(db_transaction)
+        db.refresh(sys_transaction)
+        return db_transaction
 
        
+    if (transaction.transType == "Credit") or (transaction.transType == "credit"):
+        #IF TRANSACTION TYPE IS CREDIT
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        balanceAfter = balanceBefore + transaction.amount
+        db_transaction = database.Transactions(amount=transaction.amount, 
+                                            narration=transaction.narration, userID=transaction.userID, 
+                                            transType=transaction.transType, purpose=transaction.purpose, balanceBefore=balanceBefore, balanceAfter=balanceAfter)
+        db.add(db_transaction)
+        db.commit()
+        db.refresh(db_transaction)
+        return db_transaction
+    
+    # if (transaction.transType != "Debit") or (transaction.transType != "debit") or (transaction.transType != "Credit") or (transaction.transType != "credit"):
+    #     return "Invalid transaction type"
 
-    #IF TRANSACTION TYPE IS CREDIT
-    balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
-    balanceAfter = balanceBefore + transaction.amount
-    db_transaction = database.Transactions(amount=transaction.amount, 
-                                        narration=transaction.narration, userID=transaction.userID, 
-                                        transType=transaction.transType, purpose=transaction.purpose, balanceBefore=balanceBefore, balanceAfter=balanceAfter)
-    db.add(db_transaction, sys_transaction)
-    db.commit()
-    db.refresh(db_transaction)
-    return db_transaction
+
 
 def update_wallet_info(db: Session, info_update: module.TransactionCreateandUpdate):
     #GET WALLET BY USER ID

@@ -45,18 +45,18 @@ class Transaction(TransactionBase):
         orm_mode = True
 
 
-class SystemTransactionBase(BaseModel):
-    amount: float
-    narration: str
+# class SystemTransactionBase(BaseModel):
+#     amount: float
+#     narration: str
 
-class SystemTransaction(SystemTransactionBase):
-    id: int
-    createdAt: datetime.datetime
-    updatedAt: datetime.datetime
-    balanceBefore: float
-    balanceAfter: float
-    transType: str
+# class SystemTransaction(SystemTransactionBase):
+#     id: int
+#     createdAt: datetime.datetime
+#     updatedAt: datetime.datetime
+#     balanceBefore: float
+#     balanceAfter: float
+#     transType: str
 
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
