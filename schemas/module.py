@@ -32,6 +32,11 @@ class TransactionCreateandUpdate(TransactionBase):
     purpose: str
 
 
+class Withdraw(TransactionCreateandUpdate):
+    account_number: str
+    bank_name: str
+
+
 class Transaction(TransactionBase):
     id: int
     userID: int

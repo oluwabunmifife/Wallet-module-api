@@ -100,4 +100,29 @@ def update_system_wallet(db: Session):
     db.commit()
     db.refresh(sys_wallet)
 
+def withdraw(db: Session, transaction: module.Withdraw):
+    if (transaction.transType == "Credit") or (transaction.transType == "credit"):
+        return("Invalid Transaction Type. Try again")
+    
+    if (transaction.transType == "Debit") or (transaction.transType == "debit"):
+        #QUERY THE DATABASE TABLE
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        #CHECK IF BALANCE IS LESS THAN TRANSACTION AMOUNT
+        if balanceBefore < transaction.amount:
+            raise HTTPException(status_code=404, detail="Insufficient Funds")
+        #IF BALANCE IS MORE THAN TRANSACTION AMOUNT, THEN CONTINUE ---->>>>>>>>>>>>>>>>>>>>>
 
+
+        #PERFORM WALLET DEBIT
+        transaction.amount = -transaction.amount
+        balanceAfter = balanceBefore + transaction.amount
+        db_transaction = database.Transactions(amount=transaction.amount, 
+                                           narration=transaction.narration, userID=transaction.userID, 
+                                           transType=transaction.transType, purpose=transaction.purpose, balanceBefore=balanceBefore, balanceAfter=balanceAfter)
+        db.add(db_transaction)
+        db.commit()
+        db.refresh(db_transaction)
+        return {
+            "Funds successfully withdrawn", 
+            db_transaction
+        }
