@@ -49,6 +49,11 @@ class Transaction(TransactionBase):
     class Config:
         orm_mode = True
 
+#Module for creating Transfer recipient
+# class WithdrawCreate(BaseModel):
+#     reciepient_name: str
+#     account_number: str
+#     bank_code: str
 
 # class SystemTransactionBase(BaseModel):
 #     amount: float
