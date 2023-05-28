@@ -2,8 +2,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from paystackapi.trecipient import TransferRecipient
-from paystackapi.paystack import Paystack
+# from paystackapi.trecipient import TransferRecipient
+# from paystackapi.paystack import Paystack
 import requests
 
 #Submodules
