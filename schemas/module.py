@@ -36,6 +36,9 @@ class Withdraw(TransactionCreateandUpdate):
     account_number: str
     bank_name: str
 
+class Send(TransactionCreateandUpdate):
+    receiverID: str
+
 
 class Transaction(TransactionBase):
     id: int

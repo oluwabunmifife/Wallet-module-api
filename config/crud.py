@@ -126,3 +126,52 @@ def withdraw(db: Session, transaction: module.Withdraw):
             "Funds successfully withdrawn", 
             db_transaction
         }
+    
+
+def send(db: Session, transaction: module.Send):
+    if (transaction.transType == "Credit") or (transaction.transType == "credit"):
+        return("Invalid Transaction Type. Try again")
+    
+    if (transaction.transType == "Debit") or (transaction.transType == "debit"):
+        #QUERY THE DATABASE TABLE
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        #CHECK IF BALANCE IS LESS THAN TRANSACTION AMOUNT
+        if balanceBefore < transaction.amount:
+            raise HTTPException(status_code=404, detail="Insufficient Funds")
+        #IF BALANCE IS MORE THAN TRANSACTION AMOUNT, THEN CONTINUE ---->>>>>>>>>>>>>>>>>>>>>
+
+        receiveid = db.query(database.Wallets).filter(database.Wallets.userID == transaction.receiverID).first()
+        receiverbalance = receiveid.balance
+
+        #CREDIT RECEIVER
+        newreceiverbalance = receiverbalance + transaction.amount
+        db_transaction2 = database.Transactions(amount=transaction.amount, 
+                                            narration=transaction.narration, userID=transaction.receiverID, 
+                                            transType=transaction.transType, purpose=transaction.purpose, balanceBefore=receiverbalance, balanceAfter=newreceiverbalance)
+
+        #PERFORM WALLET DEBIT
+        transaction.amount = -transaction.amount
+        balanceAfter = balanceBefore + transaction.amount
+        db_transaction1 = database.Transactions(amount=transaction.amount, 
+                                           narration=transaction.narration, userID=transaction.userID, 
+                                           transType=transaction.transType, purpose=transaction.purpose, balanceBefore=balanceBefore, balanceAfter=balanceAfter)
+        
+        db.add_all([db_transaction1, db_transaction2])
+        db.commit()
+        db.refresh(db_transaction1)
+        db.refresh(db_transaction2)
+        return db_transaction1, db_transaction2
+    
+def update_receiver_info(db: Session, info_update: module.Send):
+    #GET WALLET BY RECEIVER ID
+    find_wallet = get_wallet(db, info_update.receiverID)
+
+    if find_wallet is None:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    
+    #ORDER TABLE BY ID (DESCENDING) AND GET THE FIRST ROW (LATEST TRANSACTION)
+    check_table = db.query(database.Transactions).order_by(database.Transactions.id.desc()).filter(database.Transactions.userID == info_update.receiverID).first().balanceAfter
+    find_wallet.balance = check_table
+    db.commit()
+    db.refresh(find_wallet)
+    return find_wallet
