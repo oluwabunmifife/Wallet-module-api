@@ -43,7 +43,10 @@ def create_transaction(db: Session, transaction: module.TransactionCreateandUpda
         #IF BALANCE IS MORE THAN TRANSACTION AMOUNT, THEN CONTINUE ---->>>>>>>>>>>>>>>>>>>>>
         
         #UPDATING SYSTEM WALLET
-        sysBalanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == "System").first().balance
+        try:
+            sysBalanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == "system").first().balance
+        except AttributeError:
+            sysBalanceBefore = 0
         sysBalanceAfter = sysBalanceBefore + transaction.amount
 
         #SYSTEM TRANSACTION UPDATE
@@ -95,7 +98,7 @@ def update_wallet_info(db: Session, info_update: module.TransactionCreateandUpda
 
 def update_system_wallet(db: Session):
     check_table = db.query(database.SystemTransactions).order_by(database.SystemTransactions.id.desc()).first().balanceAfter
-    sys_wallet = get_wallet(db, "System")
+    sys_wallet = get_wallet(db, "system")
     sys_wallet.balance = check_table
     db.commit()
     db.refresh(sys_wallet)
