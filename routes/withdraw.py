@@ -64,7 +64,11 @@ def withdraw(transaction: module.TransactionCreateandUpdate, db: Session = Depen
     db_wallet = crud.get_wallet(db=db, user_id=transaction.userID)
     if db_wallet is None:
         raise HTTPException(status_code=404, detail="Wallet not found")
-    withdraw = crud.withdraw(db=db, transaction=transaction)
+    withdraw = crud.withdraw(db=db, transaction=transaction) # type: ignore
     update = crud.update_wallet_info(db=db, info_update=transaction)
+    if (transaction.transType == "Credit") or (transaction.transType == "credit"):
+        return withdraw
+    if (transaction.transType == "Debit") or (transaction.transType == "debit"):
+        return update
 
-    return "Your funds have been successfully withdrawn."
+    # return "Your funds have been successfully withdrawn."

@@ -25,7 +25,7 @@ class TopUpWallet:
 
     #TopUp Wallet
     @router.post('/topup')
-    def topup_wallet(transaction: module.TransactionCreateandUpdate, db: Session = Depends(get_db)):
+    def topup_wallet(transaction: module.TransactionCreateandUpdate, db: Session = Depends(get_db)): # type: ignore
         db_wallet = crud.get_wallet(db=db, user_id=transaction.userID)
         if db_wallet is None:
             raise HTTPException(status_code=404, detail="Wallet not found")

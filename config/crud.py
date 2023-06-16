@@ -36,15 +36,15 @@ def create_transaction(db: Session, transaction: module.TransactionCreateandUpda
     if (transaction.transType == "Debit") or (transaction.transType == "debit"):
 
         #QUERY THE DATABASE TABLE
-        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance # type: ignore
         #CHECK IF BALANCE IS LESS THAN TRANSACTION AMOUNT
-        if balanceBefore < transaction.amount:
+        if balanceBefore < transaction.amount: # type: ignore
             raise HTTPException(status_code=404, detail="Insufficient Funds")
         #IF BALANCE IS MORE THAN TRANSACTION AMOUNT, THEN CONTINUE ---->>>>>>>>>>>>>>>>>>>>>
         
         #UPDATING SYSTEM WALLET
         try:
-            sysBalanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == "system").first().balance
+            sysBalanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == "system").first().balance # type: ignore
         except AttributeError:
             sysBalanceBefore = 0
         sysBalanceAfter = sysBalanceBefore + transaction.amount
@@ -67,7 +67,7 @@ def create_transaction(db: Session, transaction: module.TransactionCreateandUpda
        
     if (transaction.transType == "Credit") or (transaction.transType == "credit"):
         #IF TRANSACTION TYPE IS CREDIT
-        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance # type: ignore
         balanceAfter = balanceBefore + transaction.amount
         db_transaction = database.Transactions(amount=transaction.amount, 
                                             narration=transaction.narration, userID=transaction.userID, 
@@ -90,28 +90,30 @@ def update_wallet_info(db: Session, info_update: module.TransactionCreateandUpda
         raise HTTPException(status_code=404, detail="Wallet not found")
     
     #ORDER TABLE BY ID (DESCENDING) AND GET THE FIRST ROW (LATEST TRANSACTION)
-    check_table = db.query(database.Transactions).order_by(database.Transactions.id.desc()).filter(database.Transactions.userID == info_update.userID).first().balanceAfter
+    check_table = db.query(database.Transactions).order_by(database.Transactions.id.desc()).filter(database.Transactions.userID == info_update.userID).first().balanceAfter # type: ignore
     find_wallet.balance = check_table
     db.commit()
     db.refresh(find_wallet)
     return find_wallet
 
 def update_system_wallet(db: Session):
-    check_table = db.query(database.SystemTransactions).order_by(database.SystemTransactions.id.desc()).first().balanceAfter
+    check_table = db.query(database.SystemTransactions).order_by(database.SystemTransactions.id.desc()).first().balanceAfter # type: ignore
     sys_wallet = get_wallet(db, "system")
     sys_wallet.balance = check_table
     db.commit()
     db.refresh(sys_wallet)
 
+fail_response = ""
 def withdraw(db: Session, transaction: module.Withdraw):
     if (transaction.transType == "Credit") or (transaction.transType == "credit"):
-        return("Invalid Transaction Type. Try again")
+        fail_response = "Invalid Transaction Type. Try again"
+        return fail_response
     
     if (transaction.transType == "Debit") or (transaction.transType == "debit"):
         #QUERY THE DATABASE TABLE
-        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance # type: ignore
         #CHECK IF BALANCE IS LESS THAN TRANSACTION AMOUNT
-        if balanceBefore < transaction.amount:
+        if balanceBefore < transaction.amount: # type: ignore
             raise HTTPException(status_code=404, detail="Insufficient Funds")
         #IF BALANCE IS MORE THAN TRANSACTION AMOUNT, THEN CONTINUE ---->>>>>>>>>>>>>>>>>>>>>
 
@@ -137,14 +139,14 @@ def send(db: Session, transaction: module.Send):
     
     if (transaction.transType == "Debit") or (transaction.transType == "debit"):
         #QUERY THE DATABASE TABLE
-        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance
+        balanceBefore = db.query(database.Wallets).filter(database.Wallets.userID == transaction.userID).first().balance # type: ignore
         #CHECK IF BALANCE IS LESS THAN TRANSACTION AMOUNT
-        if balanceBefore < transaction.amount:
+        if balanceBefore < transaction.amount: # type: ignore
             raise HTTPException(status_code=404, detail="Insufficient Funds")
         #IF BALANCE IS MORE THAN TRANSACTION AMOUNT, THEN CONTINUE ---->>>>>>>>>>>>>>>>>>>>>
 
         receiveid = db.query(database.Wallets).filter(database.Wallets.userID == transaction.receiverID).first()
-        receiverbalance = receiveid.balance
+        receiverbalance = receiveid.balance # type: ignore
 
         #CREDIT RECEIVER
         newreceiverbalance = receiverbalance + transaction.amount
@@ -173,7 +175,7 @@ def update_receiver_info(db: Session, info_update: module.Send):
         raise HTTPException(status_code=404, detail="Wallet not found")
     
     #ORDER TABLE BY ID (DESCENDING) AND GET THE FIRST ROW (LATEST TRANSACTION)
-    check_table = db.query(database.Transactions).order_by(database.Transactions.id.desc()).filter(database.Transactions.userID == info_update.receiverID).first().balanceAfter
+    check_table = db.query(database.Transactions).order_by(database.Transactions.id.desc()).filter(database.Transactions.userID == info_update.receiverID).first().balanceAfter # type: ignore
     find_wallet.balance = check_table
     db.commit()
     db.refresh(find_wallet)
